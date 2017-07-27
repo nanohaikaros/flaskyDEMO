@@ -1,6 +1,7 @@
 from flask_wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Email, Regexp, EqualTo
+from wtforms import ValidationError
 from ..models import User
 
 class LoginForm(Form):
@@ -22,11 +23,11 @@ class RegistrationForm(Form):
 
     def validete_eamil(self, field):
         if User.query.filter_by(email=field.data).first():
-            raise ValueError('Email already registered.')
+            raise ValidationError('Email already registered.')
 
     def validate_username(self, field):
         if User.query.filter_by(username=field.data).first():
-            raise ValueError('Username already in use.')
+            raise ValidationError('Username already in use.')
 
 class ChangePasswordForm(Form):
     old_password = PasswordField('Old password', validators=[Required()])
@@ -34,3 +35,19 @@ class ChangePasswordForm(Form):
         Required(), EqualTo('password2', message='Passwords must match')])
     password2 = PasswordField('Confirm new password', validators=[Required()])
     submit = SubmitField('Update Password')
+
+
+class PasswordResetRequesForm(Form):
+    email = StringField('Email', validators=[Required(), Length(1, 64), Email()])
+    submit = SubmitField('Reset Password')
+
+class PasswrodResetForm(Form):
+    email = StringField('Email', validators=[Required(), Length(1, 64), Email()])
+    passwrod = PasswordField('New Password', validators=[
+        Required(), EqualTo('password2', message='Passwords must match.')])
+    password2 = PasswordField('Confirm password', validators=[Required()])
+    submit = SubmitField('Reset Password')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first() is None:
+            raise ValidationError('Unknown email address.')
