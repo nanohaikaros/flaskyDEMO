@@ -65,16 +65,32 @@ def edit_profile_admin(id):
         db.session.add(user)
         flash('The profile has been updated.')
         return redirect(url_for('.user', username=user.username))
-    user.email = user.email
-    user.username = user.username
-    user.confirmed = user.confirmed
-    user.role = user.role.id
-    user.name = user.name
-    user.location = user.location
-    user.about_me = user.about_me
+    form.email.data = user.email
+    form.username.data = user.username
+    form.confirmed.data = user.confirmed
+    form.role.data = user.role.id
+    form.name.data = user.name
+    form.location.data = user.location
+    form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
 
 @main.route('/post/<int:id>')
 def post(id):
     post = Post.query.get_or_404(id)
     return render_template('post.html', posts=[post])
+
+@main.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and not current_user.can(
+            Permission.ADMINISTER):
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash('The post has been update.')
+        return redirect(url_for('post', id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
