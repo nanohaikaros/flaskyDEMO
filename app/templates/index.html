@@ -22,3 +22,8 @@
 {% endif %}
 
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
