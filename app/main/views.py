@@ -85,12 +85,12 @@ def edit_profile_admin(id):
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
 
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
 def post(id):
     post = Post.query.get_or_404(id)
     form = CommentForm()
     if form.validate_on_submit():
-        comment = CommentForm(body=form.body.data,
+        comment = Comment(body=form.body.data,
                               post=post,
                               author=current_user._get_current_object())
         db.session.add(comment)
